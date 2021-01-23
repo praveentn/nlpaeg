@@ -57,13 +57,16 @@ def create_sent_ngrams(ngram_order, ngram_cols, sentence_column, source_data, n_
 
 def random_most_common_ngram(sent_ngrams, ngram_cols, ngram_order, ngrams):
     
+    # sent_ngrams = [sentence, [1-gm], [2-gms], [3-gms], [4-gms], [5-gms]]
+    # ngram_cols = {1: "unigrams", 2: "bigrams", 3: "trigrams", }
+    # self.ngram_order = 3 -> trigrams; 2-> bigrams
+    # ngrams -> top most common ngrams dictionary
+    # return replacements = [ngram matched, sentence, replacement words]
+
     # required output
     # [ngram matched, sentence, replacement words]
-    replacements = []
-
-    # sent_ngrams = [sentence, [1-gm], [2-gms], [3-gms], [4-gms], [5-gms]]
-    # return replacements = [ngram matched, sentence, replacement words]
     # found replacements
+    replacements = []
     found = []
 
     for indx, sngs in enumerate(sent_ngrams):
@@ -77,15 +80,51 @@ def random_most_common_ngram(sent_ngrams, ngram_cols, ngram_order, ngrams):
                 req_one_ncom = random.choice(ncom)
                 replacements.append([indx, i, sngs[0], req_one_ncom])
                 found.append(indx)                    
-        #else:
-            #    continue
 
+    # replaced indices
+    replaced_indices = list(set([x[0] for x in replacements]))
+
+    # not found replacements
+    unreplaced_indices = [x for x in range(len(sent_ngrams)) if x not in replaced_indices]
+
+    for unreplaced_index in unreplaced_indices:
+        replacements.append([unreplaced_index, 0, sent_ngrams[unreplaced_index], ''])
 
     return replacements
 
-#sent_ngrams = list(df[["sentences", "quadgrams", "trigrams", "bigrams", "unigrams"]].values)
-#random_most_common_ngram(sent_ngrams[35:43])
+
+def remove_verbs(l):
+
+    choice = random.choice(l)
+    r = [x for x in l if x != choice]    
+    return r
+
+
+common_error_function_map = {
+    "remove_verbs": remove_verbs
+}
 
 
 
+def create_error(x):
 
+    # x -> # index, ngram, sentence, replace, error
+
+    #print(common_error_function_map["remove_verbs"](['1', '2']))
+
+    ng = x[1]
+    sentence = x[2]
+    ngs = list(x[3])
+    error = x[4]
+
+    if ng == 1:
+        pass
+    else:
+        if not ngs:
+            print(ng, ngs)
+        else:
+            rephrased = common_error_function_map["remove_verbs"](ngs)
+            return rephrased
+
+
+    return "foo"
