@@ -27,7 +27,7 @@ def main():
     g.source_data = pd.read_csv(train_data_file_path)
 
     # comment below to select entire dataset
-    g.source_data = g.source_data.sample(1000)
+    g.source_data = g.source_data.sample(2000)
 
     # set sentence column name
     # default: sentences
@@ -89,38 +89,39 @@ def main():
     # values -> distribution %
     g.error_distribution = {
         "dictionary_replacement_verb_form_change": 0.1,
-        "dictionary_replacement_word_order_change": 0.1,
+        "dictionary_replacement_phrase_order_change": 0.1,
         "verb_form_change_insert_determiner": 0.1,
-        "verb_form_change_order_change": 0.1,
+        "verb_form_change_phrase_order_change": 0.1,
+        "phrase_order_change": 0.1,
         "insert_determiner": 0.1,
-        "punctuation_braces": 0.05,
-        "punctuations": 0.05,
         "duplication": 0.1,
         "split_words": 0.1,
-        "remove_verbs": 0.05,
-        "random": 0.15,
-        
+        "remove_words": 0.05,
+        "random_pick": 0.05,
+        "verb_form_change": 0.05,
+        "punctuations": 0.04,
+        "punctuation_braces": 0.01,
     }
 
     # not all errors are applicable to unigrams
     g.error_distribution_unigram = {
-        "dictionary_replacement_verb_form_change": 0.1,
-        "verb_form_change_insert_determiner": 0.1,
-        "insert_determiner": 0.1,
-        "punctuation_braces": 0.05,
-        "punctuations": 0.05,
-        "duplication": 0.1,
+        "dictionary_replacement_verb_form_change": 0.2,
+        "verb_form_change_insert_determiner": 0.2,
+        "insert_determiner": 0.15,
+        "duplication": 0.15,
         "split_words": 0.1,
+        "random_pick": 0.1,
         "remove_words": 0.05,
-        "spelling_errors": 0.1,
-        "random": 0.25,
+        "punctuations": 0.03,
+        "spelling_errors": 0.01,
+        "punctuation_braces": 0.01,
         
     }
 
     # call the method to create error data
     aeg_df = g.get_aeg_data()
 
-    aeg_df.to_csv('sampled_replacements_1.csv', index=None)
+    aeg_df.to_csv('sampled_replacements_min.csv', index=None)
 
     print(aeg_df.tail(5))
 

@@ -85,9 +85,6 @@ train_data_file_path = os.path.join(data_dir, train_data)
 # set source data
 g.source_data = pd.read_csv(train_data_file_path)
 
-# comment below to select entire dataset
-g.source_data = g.source_data.sample(1000)
-
 # set sentence column name
 # default: sentences
 g.sentence_column = "sentences"

@@ -14,7 +14,10 @@ operations = ["dict_replacement", "duplication",
 
              ]
 
-
+# determiners/propositions
+determiners = ['a', 'is', 'are', 'an', 'to', 'of', 'on', 'in', 'it',
+               'if', 'or', 'was', 'were', 
+              ]
 
 # split words
 splitters = {
@@ -34,6 +37,7 @@ splitters = {
     
 }
 
+splitter_keys = splitters.keys()
 
 # were -> where
 # there -> they are
@@ -65,6 +69,17 @@ replacements = {
     
 }
 
+replacement_keys = list(replacements.keys())
 
+punctuations = [",", ":", ";", "\'", "-", " ,", " .",
+                       " , ", " . ", ", ", ". ", ",.", "..",
+                       "...", ".,", "?", " ?"
+               ]
+
+punctuation_braces = [')', '(', ' )', ' (', '( ', ') ',
+                       ' ( ', ' ) ', ']', '[', ' ]', ' [', '[ ', 
+                       '] ', ' [ ', ' ] ', '}', '{', ' }', ' {', 
+                       '{ ', '} ', ' { ', ' } ',
+                     ]
 
 
