@@ -88,33 +88,30 @@ def main():
     # keys -> type of errors
     # values -> distribution %
     g.error_distribution = {
-        "dictionary_replacement_verb_form_change": 0.1,
-        "dictionary_replacement_phrase_order_change": 0.1,
+        "dictionary_replacement_phrase_order_change": 0.2,
         "verb_form_change_insert_determiner": 0.1,
         "verb_form_change_phrase_order_change": 0.1,
+        "insert_determiner_verb_form_change": 0.1,
         "phrase_order_change": 0.1,
-        "insert_determiner": 0.1,
         "duplication": 0.1,
         "split_words": 0.1,
-        "remove_words": 0.05,
-        "random_pick": 0.05,
-        "verb_form_change": 0.05,
+        "remove_words": 0.1,
+        "insert_determiner": 0.05,
         "punctuations": 0.04,
         "punctuation_braces": 0.01,
     }
 
     # not all errors are applicable to unigrams
     g.error_distribution_unigram = {
-        "dictionary_replacement_verb_form_change": 0.2,
-        "verb_form_change_insert_determiner": 0.2,
+        "verb_form_change_insert_determiner": 0.25,
+        "insert_determiner_verb_form_change": 0.15,
         "insert_determiner": 0.15,
         "duplication": 0.15,
         "split_words": 0.1,
-        "random_pick": 0.1,
-        "remove_words": 0.05,
-        "punctuations": 0.03,
-        "spelling_errors": 0.01,
-        "punctuation_braces": 0.01,
+        "remove_words": 0.1,
+        "punctuations": 0.05,
+        "spelling_errors": 0.03,
+        "punctuation_braces": 0.02,
         
     }
 
