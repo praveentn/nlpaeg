@@ -27,7 +27,7 @@ def main():
     g.source_data = pd.read_csv(train_data_file_path)
 
     # comment below to select entire dataset
-    g.source_data = g.source_data.sample(2000)
+    #g.source_data = g.source_data.sample(2000)
 
     # set sentence column name
     # default: sentences
@@ -88,7 +88,7 @@ def main():
     # keys -> type of errors
     # values -> distribution %
     g.error_distribution = {
-        "dictionary_replacement_phrase_order_change": 0.2,
+        "dictionary_replacement_phrase_order_change": 0.1,
         "verb_form_change_insert_determiner": 0.1,
         "verb_form_change_phrase_order_change": 0.1,
         "insert_determiner_verb_form_change": 0.1,
@@ -96,6 +96,7 @@ def main():
         "duplication": 0.1,
         "split_words": 0.1,
         "remove_words": 0.1,
+        "spelling_errors": 0.1,
         "insert_determiner": 0.05,
         "punctuations": 0.04,
         "punctuation_braces": 0.01,
@@ -103,15 +104,15 @@ def main():
 
     # not all errors are applicable to unigrams
     g.error_distribution_unigram = {
-        "verb_form_change_insert_determiner": 0.25,
+        "verb_form_change_insert_determiner": 0.15,
         "insert_determiner_verb_form_change": 0.15,
         "insert_determiner": 0.15,
         "duplication": 0.15,
         "split_words": 0.1,
         "remove_words": 0.1,
+        "spelling_errors": 0.1,
         "punctuations": 0.05,
-        "spelling_errors": 0.03,
-        "punctuation_braces": 0.02,
+        "punctuation_braces": 0.05,
         
     }
 

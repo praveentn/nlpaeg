@@ -1,16 +1,21 @@
 # generator.py
 
 # load libraries
+import json
 import random
+import nlpaeg
+import requests
 import numpy as np
 import pandas as pd
+import importlib.resources
+
 from tqdm import tqdm
-from itertools import chain
+from itertools import chain, groupby
 from numpy.random import choice
 from collections import Counter
 from lemminflect import isTagBaseForm
-from lemminflect import getLemma, getAllLemmas, getInflection
-from lemminflect import getAllInflections, getAllInflectionsOOV
+from lemminflect import getLemma, getAllLemmas
+from lemminflect import getInflection, getAllInflections
 
 '''
 var= np.round(np.random.normal(distribution mean, 
@@ -47,6 +52,18 @@ class Variables():
         self.determiners = ['a', 'is', 'are', 'an', 'to', 'of', 'on', 'in', 'it',
                     'if', 'or', 'was', 'were', 'from', 
                     ]
+
+        # common misspelled words
+        #misspelled_words_file = pkgutil.get_data("nlpaeg", "resources/common_misspelled_eng_words.json")
+
+        misspelled_url = "https://raw.githubusercontent.com/praveentn/nlpaeg/main/resources/common_misspelled_eng_words.json"
+        self.misspelled = json.loads(requests.get(misspelled_url).text)
+        
+        #with open(misspelled_words_file) as f:
+        #    self.misspelled = json.load(f)
+        
+        self.misspelled_dict = {k: [j for j, _ in list(v)] for k, v in groupby(self.misspelled.items(), lambda x: x[1])}
+        self.misspelled_words = list(set(list(self.misspelled_dict.keys())))
 
         # split words
         self.splitters = {
@@ -119,6 +136,8 @@ class Variables():
 
         }
 
+        self.replacements = {**self.replacements, **self.misspelled_dict}
+
         self.rep_punctuations = [",", ":", ";", "\'", "-", " ,", " .",
                             " , ", " . ", ", ", ". ", ",.", "..",
                             "...", ".,", "?", " ?"
@@ -134,7 +153,7 @@ class Variables():
         self.splitter_keys = list(self.splitters.keys())
 
         # replacements
-        self.replacement_keys = list(self.replacements.keys())
+        self.replacement_keys = list(set(list(self.replacements.keys())))
 
         self.noreplace = "No replacement found"
 
@@ -293,7 +312,7 @@ def insert_determiner(v, l, n):
 def dictionary_replacement(v, l, n):
     
     try:
-        common = random.choice(list(set(v.replacement_keys).intersection(l)))    
+        common = random.choice(v.replacement_keys).intersection(l)
     except:
         return l
     
@@ -371,7 +390,13 @@ def split_words(v, l, n):
 
 def spelling_errors(v, l, n):
 
-    return l
+    try:
+        common = random.choice(v.misspelled_words).intersection(l)
+    except:
+        l = dictionary_replacement(v, l, n)
+        return l
+    
+    return [random.choice(v.misspelled_dict[w]) if w == common else w for w in l]
 
 def dictionary_replacement_verb_form_change(v, l, n):
 
@@ -390,7 +415,7 @@ def dictionary_replacement_phrase_order_change(v, l, n):
 def verb_form_change_insert_determiner(v, l, n):
 
     r = verb_form_change(v, l,n)
-    l = dictionary_replacement(v, r, n)    
+    l = insert_determiner(v, r, n)    
 
     return l
 
@@ -409,19 +434,13 @@ def verb_form_change_phrase_order_change(v, l, n):
     return l
 
 
-def create_error(x):
-
-    v = Variables()
-    v.__init__()
+def create_error(v, x):
 
     # x -> # index, ngram, sentence, replace, error
-
-    #print(common_error_function_map["remove_verbs"](['1', '2']))
-
     ng = x[1]
-    sentence = x[2]
+    #sentence = x[2]
     ngs = list(x[3])
-    error = x[4]
+    #error = x[4]
 
     if not ngs:
         dx = 1
@@ -431,8 +450,7 @@ def create_error(x):
         rephrased = v.common_error_function_map[x[4]](v, ngs, ng)
         return rephrased
 
-
-    return "foo"
+    return "No replacement found"
 
 
 
@@ -484,29 +502,21 @@ class ErrorGenerator():
         # process in batches
         for i in tqdm(range(start, len(self.source_data), batchsize)):
 
-            print("start: ", start, " | batchsize: ", batchsize)
-
             ngrams, sent_ngrams = create_sent_ngrams(self.ngram_order, self.ngram_cols,
                                                 self.sentence_column, self.source_data[start:start+batchsize],
                                                 self.n_ngrams,
                                                 )
 
-            print("sent_ngrams: ", len(sent_ngrams))
-
             replacements = random_most_common_ngram(sent_ngrams, self.ngram_cols, 
                                                         self.ngram_order, ngrams)
 
-            print("replacements: ", len(replacements))
-
-            tmp_df = pd.DataFrame(replacements, columns=["index", "ngram", "sentence", "replace"])
+            tmp_df = pd.DataFrame(replacements, columns=["index", "ngram", "sentences", "replace"])
 
             tmp = dict()
 
             for i in range(0, self.ngram_order+1):
                 tmp[i] = tmp_df.loc[tmp_df.ngram == i].sample(frac=self.ngram_weights[i])
                 sampled_replacements = pd.concat([sampled_replacements, tmp[i]], ignore_index=True)
-
-            print("sampled_replacements: ", len(sampled_replacements))
 
             start += batchsize
 
@@ -524,12 +534,12 @@ class ErrorGenerator():
 
         sampled_replacements.loc[sampled_replacements.ngram == 1, 'error'] = error_mappings_unigrams
 
+        # initialize variables for error generation
+        v = Variables()
+        #v.__init__()
+
         # sampled_replacements 
         # index, ngram, sentence, replace, error, replacement
-        sampled_replacements['replacement'] = sampled_replacements.apply(lambda x: create_error(x), axis=1)
-
-        #print("No reps: ", len(sampled_replacements.loc[sampled_replacements.replacement == sampled_replacements.replace]))
-
-        #print(sampled_replacements.loc[sampled_replacements.replacement == sampled_replacements.replace].error.value_counts())
+        sampled_replacements['replacement'] = sampled_replacements.apply(lambda x: create_error(v, x), axis=1)
 
         return sampled_replacements
